@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -26,8 +28,23 @@ public class StudentService {
     public List<StudentCourse> getAllStudentsWithCourses() {
         List<Student> students = studentRepository.findAll();
         List<StudentCourse> studentCourses = new ArrayList<>();
+        
+        // Fetch all student courses in one database call
+        List<StudentCourse> allStudentCourses = studentCourseRepository.findAll();
+        
+        // Create a map to group courses by student ID for efficient lookup
+        Map<Long, List<StudentCourse>> coursesByStudentId = new HashMap<>();
+        for (StudentCourse sc : allStudentCourses) {
+            Long studentId = sc.getStudent().getId();
+            if (!coursesByStudentId.containsKey(studentId)) {
+                coursesByStudentId.put(studentId, new ArrayList<>());
+            }
+            coursesByStudentId.get(studentId).add(sc);
+        }
+        
+        // Process each student with their courses from the map
         for (Student student : students) {
-            List<StudentCourse> studentCoursesByStudent = studentCourseRepository.findByStudentId(student.getId());
+            List<StudentCourse> studentCoursesByStudent = coursesByStudentId.getOrDefault(student.getId(), new ArrayList<>());
             for (StudentCourse studentCourseByStudent : studentCoursesByStudent) {
                 StudentCourse studentCourse = new StudentCourse();
                 studentCourse.setStudent(student);
