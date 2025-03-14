@@ -57,15 +57,8 @@ public class StudentService {
 
     public Optional<Student> findStudentWithHighestGpa() {
         List<Student> students = studentRepository.findAll();
-        Student highestGpaStudent = null;
-        double highestGpa = 0.0;
-        for (Student student : students) {
-            if (student.getGpa() > highestGpa) {
-                highestGpa = student.getGpa();
-                highestGpaStudent = student;
-            }
-        }
-        return Optional.ofNullable(highestGpaStudent);
+        return students.stream()
+                .max((s1, s2) -> Double.compare(s1.getGpa(), s2.getGpa()));
     }
 
     public String joinStudentNames() {
